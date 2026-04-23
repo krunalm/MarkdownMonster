@@ -253,7 +253,14 @@ namespace MarkdownMonster
                 if (doc == null)
                     return;
 
-                var folder = Path.GetDirectoryName(doc.MarkdownDocument.Filename);
+                // GetDirectoryName returns null/empty when Filename is a bare name
+                // like "untitled"; fall back to the last-used folder so the dialog
+                // opens somewhere useful instead of an arbitrary cwd.
+                string folder = null;
+                if (doc.MarkdownDocument.Filename != "untitled")
+                    folder = Path.GetDirectoryName(doc.MarkdownDocument.Filename);
+                if (string.IsNullOrEmpty(folder))
+                    folder = mmApp.Configuration.LastFolder;
 
                 SaveFileDialog sd = new SaveFileDialog
                 {
@@ -262,7 +269,7 @@ namespace MarkdownMonster
                     InitialDirectory=folder,
                     FileName = doc.MarkdownDocument.Filename,
                     CheckFileExists = false,
-                    OverwritePrompt = false,
+                    OverwritePrompt = true,
                     CheckPathExists = true,
                     RestoreDirectory = true
                 };

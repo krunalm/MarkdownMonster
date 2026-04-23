@@ -230,23 +230,22 @@ namespace SnagItAddin
             {
                 // *** Need to delay a little here so that the form has properly minimized first
                 // *** especially under Vista/Win7
-                for (int i = 0; i < 20; i++)
-                    Thread.Sleep(5);             
+                Thread.Sleep(100);
             }
 
             snagIt.Capture();
 
             try
             {
-                bool TimedOut = true;
-                while (true)
+                // Guard against a runaway SnagIt process - wait at most
+                // (DelayInSeconds + 5 minutes) before bailing out.
+                var timeout = TimeSpan.FromMinutes(5) + TimeSpan.FromSeconds(DelayInSeconds);
+                var deadline = DateTime.UtcNow + timeout;
+                while (DateTime.UtcNow < deadline)
                 {
                     if ((bool) snagIt.IsCaptureDone)
-                    {
-                        TimedOut = false;
                         break;
-                    }
-                    Thread.Sleep(100);                    
+                    Thread.Sleep(100);
                 }
             }
 
@@ -259,14 +258,20 @@ namespace SnagItAddin
                 {
                     // Reactivate Live Writer
                     ActiveForm.WindowState = OldState;
-                    
+
                     // Make sure it pops on top of SnagIt Editors
-                    ActiveForm.Topmost = true;                    
+                    ActiveForm.Topmost = true;
                     Thread.Sleep(5);
                     ActiveForm.Topmost = false;
                 }
 
-                Marshal.ReleaseComObject(SnagItCom);
+                // Release the cached COM reference and clear the field so
+                // subsequent captures will create a fresh instance.
+                if (_SnagItCom != null)
+                {
+                    Marshal.ReleaseComObject(_SnagItCom);
+                    _SnagItCom = null;
+                }
             }
 
 

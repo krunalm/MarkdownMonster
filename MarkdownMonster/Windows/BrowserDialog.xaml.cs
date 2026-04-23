@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -46,13 +47,13 @@ namespace MarkdownMonster.Windows
 
             for (int i = 0; i < 200; i++)
             {
-                dynamic doc = Browser.Document;
+                if (IsLoaded)
+                    return true;
 
-                if (!IsLoaded)
-                {
-                    Task.Delay(10);
-                    WindowUtilities.DoEvents();
-                }
+                // Thread.Sleep, not Task.Delay - the latter requires await
+                // and silently returns a detached task in sync code.
+                Thread.Sleep(10);
+                WindowUtilities.DoEvents();
             }
 
             return IsLoaded;

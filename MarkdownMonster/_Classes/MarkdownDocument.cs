@@ -31,7 +31,6 @@
 */
 #endregion
 using System;
-using System;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -270,24 +269,23 @@ namespace MarkdownMonster
         /// <param name="html"></param>
         public void WriteFile(string filename, string html)
         {
-            int written = 0;
-            while (written < 4)
+            const int maxAttempts = 4;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
                 try
                 {
                     File.WriteAllText(filename, html, Encoding.UTF8);
-                    written = 10;
+                    return;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    // wait wind retry 3 times
-                    Thread.Sleep(150);
-                    written++;
-                    if (written == 4)
+                    if (attempt == maxAttempts)
                         throw new ApplicationException("Unable to write output file:  " + filename + "\r\n" + ex.Message);
-                }
-            }            
 
+                    // brief pause before retrying to give file locks time to release
+                    Thread.Sleep(150);
+                }
+            }
         }
 
 
@@ -301,7 +299,16 @@ namespace MarkdownMonster
         
         ~MarkdownDocument()
         {
-            this.Close();
+            // Finalizer must never throw - swallow any IO errors that
+            // occur while trying to clean up the generated preview file.
+            try
+            {
+                Close();
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         public override string ToString()

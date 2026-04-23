@@ -101,12 +101,12 @@ var te = window.textEditor = {
                 var keycode = e.keyCode;
 
                 var valid =
-                    (e.keycode > 47 && keycode < 58) || // number keys
+                    (keycode > 47 && keycode < 58) || // number keys
                         keycode == 32 ||
-                        keycode == 13 || // spacebar & return key(s) 
+                        keycode == 13 || // spacebar & return key(s)
                         (keycode > 64 && keycode < 91) || // letter keys
-                        (keycode > 95 && keycode < 112) || // numpad keys  
-                        (keycode > 185 && keycode < 193) || // ;=,-./` (in order) 
+                        (keycode > 95 && keycode < 112) || // numpad keys
+                        (keycode > 185 && keycode < 193) || // ;=,-./` (in order)
                         (keycode > 218 && keycode < 223); // [\]' (in order)
                 // backspace, tab -> handled in key up
 
@@ -268,7 +268,7 @@ var te = window.textEditor = {
         if (lang == "c#")
             lang = "csharp";
         if (lang == "c++")
-            lang == "c_cpp"
+            lang = "c_cpp";
 
         te.editor.getSession().setMode("ace/mode/" + lang);
     },
