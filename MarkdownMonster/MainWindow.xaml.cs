@@ -349,9 +349,9 @@ namespace MarkdownMonster
 
                 var doc = new MarkdownDocument
                 {
-                    Filename = mdFile ?? @"c:\temp\readme.md"
+                    Filename = mdFile ?? "untitled"
                 };
-                if (FileName != "untitled") 
+                if (doc.Filename != "untitled")
                     doc.Load();
 
                 doc.PropertyChanged += (sender, e) =>
@@ -858,7 +858,7 @@ namespace MarkdownMonster
                 var editor = GetActiveMarkdownEditor();
                 if (editor == null)
                     return;
-                editor.SpecialKey("ctrl-shift-d");
+                editor.SpecialKey("ctrl-shift-up");
             }
             else if (button == MenuDocumentation)
                 ShellUtils.GoUrl("http://markdownmonster.west-wind.com/docs");

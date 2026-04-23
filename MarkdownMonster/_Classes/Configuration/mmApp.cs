@@ -149,7 +149,10 @@ namespace MarkdownMonster
                     Url = mmApp.Configuration.TelemetryUrl,
                     HttpVerb = "POST",
                     Content = t,
-                    Timeout = 300
+                    // HttpRequestSettings.Timeout is in seconds; the previous
+                    // value (300) would block shutdown for five minutes when
+                    // the telemetry endpoint was unreachable.
+                    Timeout = 5
                 });
             }
             catch (Exception ex2)
@@ -233,6 +236,51 @@ namespace MarkdownMonster
 
         internal static string EncryptionMachineKey { get; } = "42331333#1Ae@rTo*dOO-002" + Environment.MachineName;
         internal static string Signature { get; } = "S3VwdWFfMTAw";
+
+        // Sentinel prefix used to detect values that have already been
+        // encrypted by EncryptString. Legacy plaintext values lack this
+        // prefix so DecryptString can pass them through unchanged.
+        private const string EncryptedValuePrefix = "enc:";
+
+        /// <summary>
+        /// Encrypts a plaintext value using the machine-bound key and
+        /// returns it with an "enc:" marker so it can be round-tripped
+        /// via DecryptString. Null/empty inputs return unchanged.
+        /// </summary>
+        public static string EncryptString(string plainText)
+        {
+            if (string.IsNullOrEmpty(plainText))
+                return plainText;
+            if (plainText.StartsWith(EncryptedValuePrefix))
+                return plainText; // already encrypted, don't double-encrypt
+            return EncryptedValuePrefix + Encryption.EncryptString(plainText, EncryptionMachineKey);
+        }
+
+        /// <summary>
+        /// Decrypts a value produced by EncryptString. Values without the
+        /// "enc:" prefix are treated as plaintext (legacy configs) and
+        /// returned unchanged so upgrades are seamless.
+        /// </summary>
+        public static string DecryptString(string cipherText)
+        {
+            if (string.IsNullOrEmpty(cipherText))
+                return cipherText;
+            if (!cipherText.StartsWith(EncryptedValuePrefix))
+                return cipherText; // legacy plaintext
+            try
+            {
+                return Encryption.DecryptString(
+                    cipherText.Substring(EncryptedValuePrefix.Length),
+                    EncryptionMachineKey);
+            }
+            catch
+            {
+                // If decryption fails (key changed, moved machine, corrupt
+                // file) return empty rather than crashing the UI. The user
+                // can re-enter the credential.
+                return string.Empty;
+            }
+        }
 
         /// <summary>
         /// The URL where new versions are downloaded from

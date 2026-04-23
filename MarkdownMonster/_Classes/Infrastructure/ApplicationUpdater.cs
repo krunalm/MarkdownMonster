@@ -79,6 +79,7 @@ namespace MarkdownMonster
         /// <param name="currentVersion"></param>
         public ApplicationUpdater(Version version)
         {
+            VersionInfo = new VersionInfo();
             CurrentVersion = GetVersionStringFromVersion(version);
             Initialize();
         }
@@ -181,10 +182,12 @@ namespace MarkdownMonster
         {
             try
             {
-                var client = new WebClient();                
-                client.DownloadProgressChanged += client_DownloadProgressChanged;
-                // In order to get events we have to run this async and wait
-                client.DownloadFile(DownloadUrl, DownloadStoragePath);
+                using (var client = new WebClient())
+                {
+                    client.DownloadProgressChanged += client_DownloadProgressChanged;
+                    // In order to get events we have to run this async and wait
+                    client.DownloadFile(DownloadUrl, DownloadStoragePath);
+                }
             }
             catch(Exception ex)
             {
@@ -198,14 +201,16 @@ namespace MarkdownMonster
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public async Task<bool> DownloadAsync()
         {
-            var client = new WebClient();
-            client.DownloadProgressChanged += client_DownloadProgressChanged;
-            await client.DownloadFileTaskAsync(DownloadUrl, DownloadStoragePath);
+            using (var client = new WebClient())
+            {
+                client.DownloadProgressChanged += client_DownloadProgressChanged;
+                await client.DownloadFileTaskAsync(DownloadUrl, DownloadStoragePath);
+            }
 
             return true;
         }

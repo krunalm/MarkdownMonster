@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using System.Windows;
 
 namespace MarkdownMonster.Windows
 {
@@ -35,27 +23,6 @@ namespace MarkdownMonster.Windows
         {
             IsLoaded = false;
             Browser.Navigate(url);
-        }
-
-        public bool NavigateAndWaitForCompletion(string url)
-        {
-            IsLoaded = false;
-            Browser.Navigate(url);
-
-            WindowUtilities.DoEvents();
-
-            for (int i = 0; i < 200; i++)
-            {
-                dynamic doc = Browser.Document;
-
-                if (!IsLoaded)
-                {
-                    Task.Delay(10);
-                    WindowUtilities.DoEvents();
-                }
-            }
-
-            return IsLoaded;
         }
 
         private void Browser_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)

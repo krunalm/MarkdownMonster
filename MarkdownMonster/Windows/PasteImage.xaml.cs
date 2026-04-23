@@ -131,8 +131,18 @@ namespace MarkdownMonster.Windows
                         var result = sd.ShowDialog();
                         if (result != null && result.Value)
                         {
-                            System.IO.File.Copy(fd.FileName, sd.FileName);
-                            Image = FileUtils.GetRelativePath(sd.FileName, mdPath);
+                            try
+                            {
+                                // SaveFileDialog already confirmed overwrite intent, but
+                                // File.Copy without overwrite=true throws when dest exists.
+                                System.IO.File.Copy(fd.FileName, sd.FileName, overwrite: true);
+                                Image = FileUtils.GetRelativePath(sd.FileName, mdPath);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Couldn't copy file to new location: \r\n" + ex.Message,
+                                    "Copy Image", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
                         }
                     }
                 }

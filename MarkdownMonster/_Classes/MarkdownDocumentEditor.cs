@@ -302,8 +302,12 @@ namespace MarkdownMonster
                 if (string.IsNullOrEmpty(link))
                     link = Clipboard.GetText();
 
-                if (!(input.StartsWith("http:") || input.StartsWith("https:") || input.StartsWith("mailto:") || input.StartsWith("ftp:")))                
-                    link = string.Empty;                
+                // input may be null/empty when no selection is active;
+                // use link (possibly from clipboard) for the scheme check.
+                if (string.IsNullOrEmpty(link) ||
+                    !(link.StartsWith("http:") || link.StartsWith("https:") ||
+                      link.StartsWith("mailto:") || link.StartsWith("ftp:")))
+                    link = string.Empty;
                 form.Link = link;
 
                 bool? res = form.ShowDialog();
@@ -325,10 +329,14 @@ namespace MarkdownMonster
                 if (string.IsNullOrEmpty(link))
                     link = Clipboard.GetText();
 
-                if (!(input.StartsWith("http:") || input.StartsWith("https:") || input.StartsWith("mailto:") || input.StartsWith("ftp:")))
+                // input may be null/empty when no selection is active.
+                if (string.IsNullOrEmpty(link) ||
+                    !(link.StartsWith("http:") || link.StartsWith("https:") ||
+                      link.StartsWith("mailto:") || link.StartsWith("ftp:")))
                     link = string.Empty;
 
-                if (input.Contains(".png") || input.Contains(".jpg") || input.Contains(".gif"))
+                if (!string.IsNullOrEmpty(input) &&
+                    (input.Contains(".png") || input.Contains(".jpg") || input.Contains(".gif")))
                     link = input;
 
                 form.Image = link;
