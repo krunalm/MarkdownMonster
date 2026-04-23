@@ -290,9 +290,12 @@ var te = window.textEditor = {
         var text = te.getvalue();
 
         // strip off blog post meta data at end of document
+        // pos is the index of the leading "\n"; substr(0, pos) keeps
+        // everything up to but not including it. The previous "pos - 1"
+        // truncated one extra character off the last line.
         var pos = text.indexOf("\n<!-- Post Configuration -->");
         if (pos > 0)
-            text = text.substr(0, pos - 1);
+            text = text.substr(0, pos);
 
         var regExWords = /\s+/gi;
         var wordCount = text.replace(regExWords, ' ').split(' ').length;                

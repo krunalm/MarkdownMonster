@@ -1,3 +1,5 @@
+using MarkdownMonster;
+using Newtonsoft.Json;
 using Westwind.Utilities;
 
 namespace WeblogAddin
@@ -14,7 +16,28 @@ namespace WeblogAddin
 
         public string Name { get; set; }
         public string Username { get; set; }
+
+        /// <summary>
+        /// In-memory plaintext password. Not serialized directly - the
+        /// SerializedPassword property below is what ends up on disk and
+        /// handles encryption/decryption transparently.
+        /// </summary>
+        [JsonIgnore]
         public string Password { get; set; }
+
+        /// <summary>
+        /// JSON representation of Password. The property is written under
+        /// the "Password" name so existing config files continue to load;
+        /// legacy plaintext values are detected by DecryptString and
+        /// passed through, then re-saved encrypted on the next Write().
+        /// </summary>
+        [JsonProperty("Password")]
+        private string SerializedPassword
+        {
+            get { return mmApp.EncryptString(Password); }
+            set { Password = mmApp.DecryptString(value); }
+        }
+
         public string ApiUrl { get; set; }
 
         public object BlogId { get; set; }

@@ -35,6 +35,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommonMark;
 using Westwind.Utilities;
@@ -80,24 +81,25 @@ namespace MarkdownMonster
             return html;
         }
 
+        // Matches "@icon-<name>" only when followed by whitespace, mirroring
+        // the original StringUtils.ExtractString(..., "@icon-", " ") behavior
+        // that required a space delimiter. Compiled once at class load.
+        private static readonly Regex FontAwesomeIconRegex =
+            new Regex(@"@icon-(?<name>\S+)(?=\s)", RegexOptions.Compiled);
+
         /// <summary>
-        /// Post processing routine that post-processes the HTML and 
-        /// replaces @icon- with fontawesome icons
+        /// Post processing routine that post-processes the HTML and
+        /// replaces @icon- with fontawesome icons. Single-pass regex
+        /// replacement - the previous loop was O(n*k) because every
+        /// match triggered a full-string Replace.
         /// </summary>
-        /// <param name="html"></param>
-        /// <returns></returns>
         protected string ParseFontAwesomeIcons(string html)
         {
-            while (true)
-            {
-                string iconBlock = StringUtils.ExtractString(html, "@icon-", " ", false, false, true);
-                if (string.IsNullOrEmpty(iconBlock))
-                    break;
+            if (string.IsNullOrEmpty(html))
+                return html;
 
-                string icon = iconBlock.Replace("@icon-", "").Trim();
-                html = html.Replace(iconBlock, "<i class=\"fa fa-" + icon + "\"></i> ");                
-            }
-            return html;
+            return FontAwesomeIconRegex.Replace(html,
+                m => "<i class=\"fa fa-" + m.Groups["name"].Value + "\"></i>");
         }
     }
 
